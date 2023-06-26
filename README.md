@@ -6,7 +6,7 @@ mosdns v5 国内国外域名分流的配置
 
 - 生成目录架构所需文件 ./configfile.sh
 
-- 导入 config.yaml 配置文件
+- 下载 config.yaml 配置文件到指定目录
 
 - 启动服务
 
@@ -24,3 +24,17 @@ mosdns v5 国内国外域名分流的配置
 ├── hosts.txt
 └── log
     └── log.txt
+```
+
+# mosdns 安装
+```bash
+docker run -d --restart=always --name mosdns -p 53:53/udp -p 53:53/tcp -v /etc/mosdns:/etc/mosdns irinesistiana/mosdns:latest
+```
+
+# mosdns 升级
+```bash
+docker pull irinesistiana/mosdns:latest
+docker stop mosdns
+docker rm mosdns
+docker run -d --restart=always --name mosdns -p 53:53/udp -p 53:53/tcp -v /etc/mosdns:/etc/mosdns irinesistiana/mosdns:latest
+```
