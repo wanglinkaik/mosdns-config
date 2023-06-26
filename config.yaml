@@ -1,0 +1,98 @@
+# 日志设置
+log:
+  level: info # 日志级别。可选 "debug" "info" "warn" "error"。默认 "info"。
+  file: ./log/log.txt # 记录日志到文件。默认输出至 stderr。
+  production: false # 纯 json 输出。
+
+plugins:
+# 缓存插件
+- tag: cache
+  type: cache
+  args:
+    size: 100000 # 缓存大小，单位：条。默认 1024
+#    lazy_cache_ttl: 86400 # lazy_cache_ttl > 0 会启用 lazy cache。不建议在企业环境下使用
+#    dump_file: ./cache/cache.dump
+#    dump_interval: 600
+
+# hosts 插件
+- tag: hosts
+  type: hosts
+  args:
+    files:
+      - "./hosts.txt"
+
+# CNAME
+- tag: cname
+  type: redirect
+  args:
+    files:
+      - "./cname.txt"
+
+# 定义中国域名列表
+- tag: china_domain_list
+  type: domain_set
+  args:
+    files:
+      - "./direct-list.txt"
+      - "./apple-cn.txt"
+      - "./google-cn.txt"
+
+# 定义中国 IP 列表
+- tag: china_ip_list
+  type: ip_set
+  args:
+    files:
+      - "./all_cn_cidr.txt"
+
+# 转发至阿里云服务器的插件
+- tag: aliyun_dns
+  type: forward
+  args:
+    concurrent: 2
+    upstreams:
+      - addr: 223.5.5.5
+      - addr: 223.6.6.6
+
+# 转发至 Google 服务器的插件
+- tag: google_dns
+  type: forward
+  args:
+    concurrent: 2
+    upstreams:
+      - addr: 8.8.8.8
+      - addr: 1.1.1.1
+
+#主 sequence 逻辑
+- tag: main_sequence
+  type: sequence
+  args:
+    - exec: $hosts
+    - matches: has_resp
+      exec: accept
+
+    - exec: $cname
+    - matches: has_resp
+      exec: accept
+
+    - exec: $cache
+    - matches: has_resp
+      exec: accept
+
+    - matches:
+      - qname $china_domain_list
+      exec: $aliyun_dns
+    - matches: has_resp
+      exec: accept
+
+    - exec: $google_dns
+
+# 在同一端口启动 udp 和 tcp 服务器。
+- type: udp_server
+  args:
+    entry: main_sequence
+    listen: :53
+
+- type: tcp_server
+  args:
+    entry: main_sequence
+    listen: :53
