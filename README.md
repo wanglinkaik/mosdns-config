@@ -38,3 +38,8 @@ docker stop mosdns
 docker rm mosdns
 docker run -d --restart=always --name mosdns -p 53:53/udp -p 53:53/tcp -v /etc/mosdns:/etc/mosdns irinesistiana/mosdns:latest
 ```
+
+# 其他
+域名库下载地址 https://github.com/Loyalsoldier/v2ray-rules-dat
+
+IP 库下载地址 https://ispip.clang.cn/
