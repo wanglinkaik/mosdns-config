@@ -60,9 +60,18 @@ plugins:
     concurrent: 2
     upstreams:
       - addr: 8.8.8.8
-      - addr: 1.1.1.1
+      - addr: 8.8.4.4
 
-#主 sequence 逻辑
+# 转发至 Google 服务器的插件_DoH
+- tag: google_dns_doh
+  type: forward
+  args:
+    concurrent: 2
+    upstreams:
+      - addr: https://8.8.8.8/dns-query
+      - addr: https://8.8.4.4/dns-query
+
+# 主 sequence 逻辑
 - tag: main_sequence
   type: sequence
   args:
@@ -78,13 +87,21 @@ plugins:
     - matches: has_resp
       exec: accept
 
+# 特定域名 mydomain.com 递归至 192.168.1.1 和 192.168.2.
+    - matches:
+      - qname
+          mydomain.com
+      exec: forward 192.168.1.1 192.168.2.1
+    - matches: has_resp
+      exec: accept
+
     - matches:
       - qname $china_domain_list
       exec: $aliyun_dns
     - matches: has_resp
       exec: accept
 
-    - exec: $google_dns
+    - exec: $google_dns_doh
 
 # 在同一端口启动 udp 和 tcp 服务器。
 - type: udp_server
