@@ -75,11 +75,11 @@ plugins:
 - tag: main_sequence
   type: sequence
   args:
-    - exec: $hosts
+    - exec: $cname
     - matches: has_resp
       exec: accept
 
-    - exec: $cname
+    - exec: $hosts
     - matches: has_resp
       exec: accept
 
